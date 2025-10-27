@@ -1,0 +1,10 @@
+GET http://localhost:3542/posts
+
+###
+
+POST http://localhost:3542/login
+Content-Type: application/json
+
+{
+    "username": "Kyle"
+}
