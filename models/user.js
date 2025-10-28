@@ -2,6 +2,7 @@ const path = require('path')
 require("dotenv").config({ path: path.resolve(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const bcrypt = require('bcryptjs')
 
 const usersSchema = new Schema({
     name:{type: String, required: true, trim: true}, 
@@ -14,7 +15,7 @@ const usersSchema = new Schema({
 
 usersSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next(); 
-    const salt = await bcrypt.gensalt(10)
+    const salt = await bcrypt.genSalt(10)
     this.password = await bcrypt.hash(this.password, salt)
     next()
 });

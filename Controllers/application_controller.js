@@ -2,14 +2,46 @@ const Application = require('../models/application')
 const job = require('../models/job')
 
 exports.apply = async (req, res) => {
-    const {jobId, coverLetter, resumeUrl} = req.body; 
-    const job = await Job.findById(jobId)
-    if (!job || !job.active) return res.status(404).json({message: 'Job not available'})
-    const exists = await Application.findOne({job: jobId, applicant: req.user._id});
-    if (exists) return res.status(400).json({message: 'Already Applied'});
-    const application = await Application.create({ job: jobId, applicant: req.user._id, coverLetter, resumeUrl})
-    res.status(201).json(application)
-}
+  try {
+    // req.body will contain text fields (jobId, coverLetter)
+    const { jobId, coverLetter } = req.body;
+    const resumeUrl = req.file?.path; // ✅ uploaded file from Cloudinary
+
+    if (!jobId || !resumeUrl) {
+      return res.status(400).json({ message: 'Job ID and resume are required.' });
+    }
+
+    // Check if job exists
+    const job = await Job.findById(jobId);
+    if (!job || !job.active) {
+      return res.status(404).json({ message: 'Job not available' });
+    }
+
+    // Prevent duplicate applications
+    const exists = await Application.findOne({ job: jobId, applicant: req.user._id });
+    if (exists) {
+      return res.status(400).json({ message: 'Already applied' });
+    }
+
+    // Create application
+    const application = await Application.create({
+      job: jobId,
+      applicant: req.user._id,
+      coverLetter,
+      resumeUrl,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Application submitted successfully',
+      application,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
 
 exports.getApplications_foremployer = async (req, res) => {
     const jobs = await Job.find({employer: req.user._id}).select('_id')

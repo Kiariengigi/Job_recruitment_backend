@@ -16,6 +16,6 @@ const jobSchema = new mongoose.Schema({
     active: {type: Boolean, default: true}
 }, {timeStamp: true})
 
-jobschema.index({title: 'text', description: 'text', skills: 'text'})
+jobSchema.index({title: 'text', description: 'text', skills: 'text'})
 
 module.exports = mongoose.model('job', jobSchema)
